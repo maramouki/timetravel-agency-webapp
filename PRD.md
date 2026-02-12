@@ -29,7 +29,7 @@ Basé sur la maquette fournie, l'UI adoptera les codes suivants :
 - **Exploration Temporelle** : Galerie interactive des 3 époques avec détails historiques.
 - **Agent Conversationnel (Chatbot)** : 
     - Personnalité : Expert historien, chaleureux et professionnel.
-    - Technologie : Mistral AI via Vercel AI SDK.
+    - Technologie : OpenAI (GPT-4o-mini) via Vercel AI SDK.
 - **Système de Réservation** : Formulaire permettant de choisir une époque et une période de séjour.
 
 ### 4.2. Expérience Utilisateur (UX) & Animations
@@ -47,7 +47,7 @@ Basé sur la maquette fournie, l'UI adoptera les codes suivants :
 - **Frontend** : React.js (Vite)
 - **Styling** : Tailwind CSS (pour la rapidité et la cohérence)
 - **Animations** : GSAP (GreenSock Animation Platform)
-- **IA/LLM** : Mistral AI (API)
+- **IA/LLM** : OpenAI GPT-4o-mini (API)
 - **Infrastructure SDK** : Vercel AI SDK
 
 ### 5.2. Architecture des Données (Destinations)
@@ -61,7 +61,7 @@ Basé sur la maquette fournie, l'UI adoptera les codes suivants :
 
 1.  **Phase 1 : Fondations** (Setup Vite, Tailwind, GSAP).
 2.  **Phase 2 : UI/UX** (Intégration du layout inspiré de `exemple.png`).
-3.  **Phase 3 : Intelligence Artificielle** (Connexion API Mistral et UI du Chatbot).
+3.  **Phase 3 : Intelligence Artificielle** (Connexion API OpenAI et UI du Chatbot).
 4.  **Phase 4 : Peaufinage** (Animations GSAP complexes et optimisation mobile).
 5.  **Phase 5 : Déploiement** (Vercel).
 
