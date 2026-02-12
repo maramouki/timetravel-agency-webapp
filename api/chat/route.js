@@ -1,16 +1,9 @@
 import { mistral } from '@ai-sdk/mistral';
 import { streamText } from 'ai';
 
-// Vercel Edge Runtime for faster response
-export const config = {
-    runtime: 'edge',
-};
+export const maxDuration = 30;
 
-export default async function handler(req) {
-    if (req.method !== 'POST') {
-        return new Response('Method Not Allowed', { status: 405 });
-    }
-
+export async function POST(req) {
     try {
         const { messages, systemPrompt } = await req.json();
 
