@@ -88,18 +88,24 @@ const Chatbot = () => {
                     {/* Messages */}
                     <div
                         ref={chatContainerRef}
-                        className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-hide"
+                        className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-hide bg-slate-900/50"
                     >
-                        {messages.map((m) => (
-                            <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                <div className={`max-w-[80%] p-4 rounded-2xl text-sm leading-relaxed ${m.role === 'user'
-                                    ? 'bg-time-gold text-slate-950 font-medium rounded-tr-none'
-                                    : 'bg-slate-800 text-slate-200 rounded-tl-none border border-white/5'
-                                    }`}>
-                                    {m.content}
+                        {messages && messages.length > 0 ? (
+                            messages.map((m) => (
+                                <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                    <div className={`max-w-[80%] p-4 rounded-2xl text-sm leading-relaxed ${m.role === 'user'
+                                        ? 'bg-time-gold text-slate-950 font-medium rounded-tr-none'
+                                        : 'bg-slate-800 text-white rounded-tl-none border border-white/5 shadow-md'
+                                        }`}>
+                                        {m.content}
+                                    </div>
                                 </div>
+                            ))
+                        ) : (
+                            <div className="flex justify-center items-center h-full text-slate-500 text-xs italic">
+                                Chargement de l'expert temporel...
                             </div>
-                        ))}
+                        )}
                         {isLoading && (
                             <div className="flex justify-start">
                                 <div className="bg-slate-800/50 p-4 rounded-2xl flex items-center space-x-2 border border-white/5">
