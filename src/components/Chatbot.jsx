@@ -8,14 +8,14 @@ const Chatbot = () => {
     const chatWindowRef = useRef(null);
 
     // Vercel AI SDK hook with System Prompt
-    const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
+    const { messages = [], input = '', handleInputChange, handleSubmit, isLoading = false, error } = useChat({
         api: '/api/chat',
         onError: (err) => {
             console.error("AI SDK Error Details:", err);
         },
         initialMessages: [
             {
-                id: 'welcome-' + Date.now(), // Unique ID for welcome message
+                id: 'welcome-msg',
                 role: 'assistant',
                 content: "Bienvenue chez TimeTravel Agency ! Je suis votre guide expert en époques révolues. Que vous soyez attiré par l'élégance de la Belle Époque à Paris, les frissons du Crétacé ou le génie de la Renaissance à Florence, je suis là pour tracer votre itinéraire temporel. Quelle destination vous fait rêver aujourd'hui ?"
             }
@@ -36,16 +36,18 @@ const Chatbot = () => {
 
     // Debugging logs
     useEffect(() => {
-        console.log("=== CHATBOT DEBUG ===");
-        console.log("Current Deployment Commit: v3-fix");
-        console.log("Current Messages Count:", messages.length);
+        console.log("=== CHATBOT DEBUG V4 ===");
+        console.log("Current Deployment Commit: v4-stable");
+        console.log("Messages type:", typeof messages);
+        console.log("Messages length:", messages?.length);
+        console.log("Input value:", input);
         console.log("Is Loading:", isLoading);
         if (error) console.error("Current Error:", error);
-        console.log("=====================");
-    }, [messages, isLoading, error]);
+        console.log("=========================");
+    }, [messages, isLoading, error, input]);
 
     useEffect(() => {
-        if (chatContainerRef.current) {
+        if (chatContainerRef.current && messages) {
             chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
         }
     }, [messages]);
@@ -148,7 +150,7 @@ const Chatbot = () => {
                         />
                         <button
                             type="submit"
-                            disabled={isLoading || !input.trim()}
+                            disabled={isLoading || !input || !input.trim()}
                             className="bg-time-gold text-slate-950 p-3 rounded-xl hover:bg-white transition flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95"
                         >
                             <Send className="h-4 w-4" />
