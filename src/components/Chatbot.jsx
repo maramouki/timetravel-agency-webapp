@@ -12,22 +12,25 @@ const Chatbot = () => {
     // Vercel AI SDK hook
     const chat = useChat({
         api: '/api/chat',
-        onError: (err) => { console.error("SDK_CRITICAL_ERR:", err); },
+        onError: (err) => {
+            console.error("SDK_ERR:", err);
+        },
     });
 
     const { messages = [], isLoading, error, status } = chat;
 
     // Diagnostic précis du rendu
     useEffect(() => {
-        console.log("=== CHATBOT RENDER FIX ===");
-        console.log("SDK Status:", status);
+        console.log("=== CHATBOT FINAL DIAGNOSTIC ===");
+        console.log("Status:", status);
         console.log("Messages Data:", messages);
         if (messages.length > 0) {
             const last = messages[messages.length - 1];
-            console.log("Last Message Parts:", last.parts);
+            console.log("Last Message Content Keys:", last ? Object.keys(last) : 'none');
+            if (last.parts) console.log("Last Message Parts Content:", last.parts);
         }
-        console.log("Deployment: v-render-fix");
-        console.log("============================");
+        console.log("Deployment: v-final-fix");
+        console.log("================================");
     }, [messages, status]);
 
     const handleLocalInputChange = (e) => {
@@ -41,8 +44,8 @@ const Chatbot = () => {
 
         try {
             setLocalInput('');
+            // Priorité au mode sendMessage si présent (nouvelle API)
             if (chat.sendMessage) {
-                // Tentative d'envoi format objet (requis par les nouvelles versions)
                 await chat.sendMessage({ text: text });
             } else if (chat.append) {
                 await chat.append({ role: 'user', content: text });
@@ -51,35 +54,36 @@ const Chatbot = () => {
             }
         } catch (err) {
             console.error("SEND ERROR:", err);
-            // Fallback texte brut
+            // Fallback ultime
             if (chat.sendMessage) await chat.sendMessage(text);
         }
     };
 
-    // Helper de rendu ultra-robuste
+    // Helper de rendu MULTI-VERSION (Hautement compatible)
     const renderMessageContent = (m) => {
         if (!m) return "";
 
-        // 1. Support du format 'parts' (Nouveau SDK)
+        // 1. Support du format 'parts' (Très flexible)
         if (m.parts && Array.isArray(m.parts)) {
-            return m.parts
-                .filter(p => p.type === 'text')
-                .map(p => p.text)
+            const partText = m.parts
+                .map(p => typeof p === 'string' ? p : (p.text || p.content || ""))
                 .join("");
+            if (partText) return partText;
         }
 
-        // 2. Format standard 'content' string
+        // 2. Format standard 'content'
         if (typeof m.content === 'string' && m.content) return m.content;
 
         // 3. Format 'text' direct
         if (typeof m.text === 'string' && m.text) return m.text;
 
-        // 4. Format 'content' array
+        // 4. Format 'content' array fallback
         if (Array.isArray(m.content)) {
-            return m.content.map(p => p.text || p.content || "").join("");
+            return m.content.map(p => (typeof p === 'string' ? p : (p.text || p.content || ""))).join("");
         }
 
-        return "...";
+        // Si on est ici, c'est vraiment un format inconnu
+        return "";
     };
 
     const chatContainerRef = useRef(null);
@@ -144,16 +148,21 @@ const Chatbot = () => {
                         ref={chatContainerRef}
                         className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-hide bg-slate-900/50"
                     >
-                        {allDisplayMessages.map((m) => (
-                            <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                <div className={`max-w-[80%] p-4 rounded-2xl text-sm leading-relaxed ${m.role === 'user'
-                                    ? 'bg-time-gold text-slate-950 font-medium rounded-tr-none'
-                                    : 'bg-slate-800 text-white rounded-tl-none border border-white/5 shadow-md'
-                                    }`}>
-                                    {renderMessageContent(m)}
+                        {allDisplayMessages.map((m) => {
+                            const content = renderMessageContent(m);
+                            if (!content && m.id !== 'permanent-welcome') return null; // Ne pas afficher de bulles vides
+
+                            return (
+                                <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                    <div className={`max-w-[80%] p-4 rounded-2xl text-sm leading-relaxed ${m.role === 'user'
+                                        ? 'bg-time-gold text-slate-950 font-medium rounded-tr-none'
+                                        : 'bg-slate-800 text-white rounded-tl-none border border-white/5 shadow-md'
+                                        }`}>
+                                        {content}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
 
                         {isLoading && (
                             <div className="flex justify-start">
