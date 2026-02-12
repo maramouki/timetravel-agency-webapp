@@ -1,36 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageSquare, X, Send, Sparkles, User, Bot } from 'lucide-react';
+import { MessageSquare, X, Send, Bot } from 'lucide-react';
 import { useChat } from '@ai-sdk/react';
 import { gsap } from 'gsap';
 
 const Chatbot = () => {
     const [isOpen, setIsOpen] = useState(false);
     const chatWindowRef = useRef(null);
-
     const [localInput, setLocalInput] = useState('');
 
-    // Vercel AI SDK hook
     const chat = useChat({
         api: '/api/chat',
-        onError: (err) => {
-            console.error("SDK_ERR:", err);
-        },
     });
 
-    const { messages = [], isLoading, error, status } = chat;
-
-    // Diagnostic Gemini
-    useEffect(() => {
-        console.log("=== CHATBOT GEMINI ===");
-        console.log("Status:", status);
-        console.log("Messages:", messages.length);
-        if (messages.length > 0) {
-            const last = messages[messages.length - 1];
-            console.log("Last Msg:", last);
-        }
-        console.log("Deployment: v-gemini");
-        console.log("======================");
-    }, [messages, status]);
+    const { messages = [], error, status } = chat;
+    const isBusy = status === 'submitted' || status === 'streaming';
 
     const handleLocalInputChange = (e) => {
         setLocalInput(e.target.value);
@@ -39,49 +22,27 @@ const Chatbot = () => {
     const handleLocalSubmit = async (e) => {
         if (e) e.preventDefault();
         const text = localInput.trim();
-        if (!text || isLoading || status === 'submitted' || status === 'streaming') return;
+        if (!text || isBusy) return;
 
-        try {
-            setLocalInput('');
-            // Priorité au mode sendMessage si présent (nouvelle API)
-            if (chat.sendMessage) {
-                await chat.sendMessage({ text: text });
-            } else if (chat.append) {
-                await chat.append({ role: 'user', content: text });
-            } else if (chat.handleSubmit) {
-                chat.handleSubmit(e);
-            }
-        } catch (err) {
-            console.error("SEND ERROR:", err);
-            // Fallback ultime
-            if (chat.sendMessage) await chat.sendMessage(text);
+        setLocalInput('');
+        if (chat.sendMessage) {
+            await chat.sendMessage({ text });
         }
     };
 
-    // Helper de rendu MULTI-VERSION (Hautement compatible)
     const renderMessageContent = (m) => {
         if (!m) return "";
-
-        // 1. Support du format 'parts' (Très flexible)
         if (m.parts && Array.isArray(m.parts)) {
             const partText = m.parts
                 .map(p => typeof p === 'string' ? p : (p.text || p.content || ""))
                 .join("");
             if (partText) return partText;
         }
-
-        // 2. Format standard 'content'
         if (typeof m.content === 'string' && m.content) return m.content;
-
-        // 3. Format 'text' direct
         if (typeof m.text === 'string' && m.text) return m.text;
-
-        // 4. Format 'content' array fallback
         if (Array.isArray(m.content)) {
             return m.content.map(p => (typeof p === 'string' ? p : (p.text || p.content || ""))).join("");
         }
-
-        // Si on est ici, c'est vraiment un format inconnu
         return "";
     };
 
@@ -91,7 +52,7 @@ const Chatbot = () => {
         if (chatContainerRef.current) {
             chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
         }
-    }, [messages]);
+    }, [messages, isBusy]);
 
     useEffect(() => {
         if (isOpen) {
@@ -112,7 +73,6 @@ const Chatbot = () => {
 
     return (
         <div className="fixed bottom-8 right-8 z-[100] font-sans">
-            {/* Chat Window */}
             {isOpen && (
                 <div
                     ref={chatWindowRef}
@@ -125,12 +85,12 @@ const Chatbot = () => {
                                 <div className="w-10 h-10 rounded-full bg-time-gold/10 flex items-center justify-center border border-time-gold/30">
                                     <Bot className="text-time-gold h-5 w-5" />
                                 </div>
-                                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-slate-900 rounded-full" />
+                                <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-slate-900 rounded-full transition-colors ${isBusy ? 'bg-amber-400 animate-pulse' : 'bg-green-500'}`} />
                             </div>
                             <div>
                                 <div className="text-white font-bold text-sm">Time Assistant</div>
-                                <div className="text-[10px] text-time-gold font-bold uppercase tracking-widest flex items-center">
-                                    Historical Expert
+                                <div className="text-[10px] text-time-gold font-bold uppercase tracking-widest">
+                                    {isBusy ? '⏳ Voyage temporel en cours...' : 'Historical Expert'}
                                 </div>
                             </div>
                         </div>
@@ -149,7 +109,7 @@ const Chatbot = () => {
                     >
                         {allDisplayMessages.map((m) => {
                             const content = renderMessageContent(m);
-                            if (!content && m.id !== 'permanent-welcome') return null; // Ne pas afficher de bulles vides
+                            if (!content && m.id !== 'permanent-welcome') return null;
 
                             return (
                                 <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -163,15 +123,18 @@ const Chatbot = () => {
                             );
                         })}
 
-                        {isLoading && (
+                        {/* Typing animation */}
+                        {isBusy && (
                             <div className="flex justify-start">
-                                <div className="bg-slate-800/50 p-4 rounded-2xl flex items-center space-x-2 border border-white/5">
-                                    <div className="flex space-x-1">
-                                        <div className="w-1.5 h-1.5 bg-time-gold rounded-full animate-bounce [animation-delay:-0.3s]" />
-                                        <div className="w-1.5 h-1.5 bg-time-gold rounded-full animate-bounce [animation-delay:-0.15s]" />
-                                        <div className="w-1.5 h-1.5 bg-time-gold rounded-full animate-bounce" />
+                                <div className="bg-slate-800/70 backdrop-blur-sm p-4 rounded-2xl rounded-tl-none border border-white/5 shadow-md flex items-center space-x-3">
+                                    <div className="flex space-x-1.5">
+                                        <div className="w-2 h-2 bg-time-gold rounded-full animate-bounce [animation-delay:-0.3s] [animation-duration:0.6s]" />
+                                        <div className="w-2 h-2 bg-time-gold/70 rounded-full animate-bounce [animation-delay:-0.15s] [animation-duration:0.6s]" />
+                                        <div className="w-2 h-2 bg-time-gold/40 rounded-full animate-bounce [animation-duration:0.6s]" />
                                     </div>
-                                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Expert explore le temps...</span>
+                                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                                        Exploration temporelle...
+                                    </span>
                                 </div>
                             </div>
                         )}
@@ -179,7 +142,7 @@ const Chatbot = () => {
                         {error && (
                             <div className="flex justify-center p-2">
                                 <div className="bg-red-500/10 border border-red-500/20 p-3 rounded-xl text-red-500 text-[10px] uppercase font-bold tracking-widest text-center">
-                                    Erreur de connexion : {error.message.includes('500') ? 'Clé API absente' : 'Réseau instable'}
+                                    Erreur de connexion
                                 </div>
                             </div>
                         )}
@@ -198,7 +161,7 @@ const Chatbot = () => {
                         />
                         <button
                             type="submit"
-                            disabled={isLoading || !localInput.trim()}
+                            disabled={isBusy || !localInput.trim()}
                             className="bg-time-gold text-slate-950 p-3 rounded-xl hover:bg-white transition flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95"
                         >
                             <Send className="h-4 w-4" />
@@ -219,7 +182,6 @@ const Chatbot = () => {
                     <MessageSquare className="text-slate-950 h-8 w-8" />
                 )}
 
-                {/* Glow Effect */}
                 {!isOpen && (
                     <div className="absolute inset-0 rounded-full bg-time-gold blur-[15px] opacity-40 animate-pulse -z-10" />
                 )}
