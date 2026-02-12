@@ -10,6 +10,7 @@ const Chatbot = () => {
     // Vercel AI SDK hook with System Prompt
     const { messages = [], input = '', handleInputChange, handleSubmit, isLoading = false, error } = useChat({
         api: '/api/chat',
+        id: 'timetravel-chat-session', // Stable ID for persistence
         onError: (err) => {
             console.error("AI SDK Error Details:", err);
         },
@@ -36,14 +37,13 @@ const Chatbot = () => {
 
     // Debugging logs
     useEffect(() => {
-        console.log("=== CHATBOT DEBUG V4 ===");
-        console.log("Current Deployment Commit: v4-stable");
-        console.log("Messages type:", typeof messages);
-        console.log("Messages length:", messages?.length);
-        console.log("Input value:", input);
-        console.log("Is Loading:", isLoading);
-        if (error) console.error("Current Error:", error);
-        console.log("=========================");
+        console.log("=== CHATBOT DEBUG V-FINAL ===");
+        console.log("Current Deployment: v-final-debug");
+        console.log("Messages Data:", messages);
+        console.log("Messages Count:", messages?.length);
+        console.log("Input:", input || 'empty');
+        if (error) console.error("API/SDK Error:", error);
+        console.log("==============================");
     }, [messages, isLoading, error, input]);
 
     useEffect(() => {
@@ -60,6 +60,15 @@ const Chatbot = () => {
             );
         }
     }, [isOpen]);
+
+    // Ensure we always have at least the welcome message for UI display
+    const displayMessages = messages.length > 0 ? messages : [
+        {
+            id: 'ui-fallback-welcome',
+            role: 'assistant',
+            content: "Initialisation de la liaison temporelle... Bienvenue chez TimeTravel Agency ! Comment puis-je vous aider ?"
+        }
+    ];
 
     return (
         <div className="fixed bottom-8 right-8 z-[100] font-sans">
@@ -98,13 +107,7 @@ const Chatbot = () => {
                         ref={chatContainerRef}
                         className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-hide bg-slate-900/50"
                     >
-                        {messages.length === 0 && (
-                            <div className="flex justify-center items-center h-full">
-                                <span className="text-slate-500 text-xs italic">Initialisation du voyage temporel...</span>
-                            </div>
-                        )}
-
-                        {messages.map((m) => (
+                        {displayMessages.map((m) => (
                             <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                 <div className={`max-w-[80%] p-4 rounded-2xl text-sm leading-relaxed ${m.role === 'user'
                                     ? 'bg-time-gold text-slate-950 font-medium rounded-tr-none'
