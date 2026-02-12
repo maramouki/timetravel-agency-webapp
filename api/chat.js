@@ -7,45 +7,67 @@ export async function POST(req) {
     try {
         const { messages, systemPrompt } = await req.json();
 
-        // Security check for API Key (logged as boolean for safety)
-        const hasKey = !!process.env.MISTRAL_API_KEY;
-        console.log('API Key configured:', hasKey);
-
-        if (!hasKey) {
-            return new Response(
-                JSON.stringify({ error: 'MISTRAL_API_KEY is not set in Vercel environment variables' }),
-                { status: 500, headers: { 'Content-Type': 'application/json' } }
-            );
+        if (!process.env.MISTRAL_API_KEY) {
+            console.error('MISSING MISTRAL_API_KEY');
+            return new Response(JSON.stringify({ error: 'MISTRAL_API_KEY missing' }), { status: 500 });
         }
 
-        // Normalize messages to ensure a clean prompt for the AI
-        const normalizedMessages = messages.map(m => {
+        // Normalisation ultra-propre pour Mistral
+        const cleanMessages = messages.map(m => {
             let content = "";
             if (typeof m.content === 'string') content = m.content;
             else if (m.parts && Array.isArray(m.parts)) {
-                content = m.parts.map(p => p.text || p.content || "").join("");
+                content = m.parts.map(p => typeof p === 'string' ? p : (p.text || "")).join("");
             } else if (m.text) content = m.text;
 
             return {
                 role: m.role === 'assistant' ? 'assistant' : 'user',
-                content: content || "Message vide"
+                content: content || " "
             };
         });
 
         const result = await streamText({
             model: mistral('mistral-small-latest'),
-            messages: normalizedMessages,
-            system: systemPrompt || "Tu es l'assistant de TimeTravel Agency, expert en voyages temporels.",
+            messages: cleanMessages,
+            system: systemPrompt || "Tu es l'assistant de TimeTravel Agency.",
         });
 
-        // Use the most robust response method
-        return result.toDataStreamResponse();
+        // STRATÉGIE DE RÉPONSE ULTRA DÉFENSIVE
+        // On teste les fonctions une par une pour éviter le crash "is not a function"
+
+        if (typeof result.toDataStreamResponse === 'function') {
+            console.log('Using toDataStreamResponse');
+            return result.toDataStreamResponse();
+        }
+
+        if (typeof result.toTextStreamResponse === 'function') {
+            console.log('Using toTextStreamResponse');
+            return result.toTextStreamResponse();
+        }
+
+        if (typeof result.toAIStreamResponse === 'function') {
+            console.log('Using toDataStreamResponse (alias)');
+            return result.toAIStreamResponse();
+        }
+
+        // Fallback ULTIME : Flux brut
+        console.log('Using raw stream fallback');
+        return new Response(result.textStream, {
+            headers: {
+                'Content-Type': 'text/plain; charset=utf-8',
+                'X-Vercel-AI-Stream': 'true'
+            }
+        });
 
     } catch (error) {
-        console.error('SERVER_ERROR:', error);
-        return new Response(
-            JSON.stringify({ error: 'Server Error', details: error.message }),
-            { status: 500, headers: { 'Content-Type': 'application/json' } }
-        );
+        console.error('CRITICAL SERVER ERROR:', error);
+        return new Response(JSON.stringify({
+            error: 'Server Error',
+            details: error.message,
+            stack: error.stack
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+        });
     }
 }
