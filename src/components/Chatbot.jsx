@@ -19,18 +19,17 @@ const Chatbot = () => {
 
     const { messages = [], isLoading, error, status } = chat;
 
-    // Diagnostic précis du rendu
+    // Diagnostic Gemini
     useEffect(() => {
-        console.log("=== CHATBOT FINAL DIAGNOSTIC ===");
+        console.log("=== CHATBOT GEMINI ===");
         console.log("Status:", status);
-        console.log("Messages Data:", messages);
+        console.log("Messages:", messages.length);
         if (messages.length > 0) {
             const last = messages[messages.length - 1];
-            console.log("Last Message Content Keys:", last ? Object.keys(last) : 'none');
-            if (last.parts) console.log("Last Message Parts Content:", last.parts);
+            console.log("Last Msg:", last);
         }
-        console.log("Deployment: v-final-fix");
-        console.log("================================");
+        console.log("Deployment: v-gemini");
+        console.log("======================");
     }, [messages, status]);
 
     const handleLocalInputChange = (e) => {

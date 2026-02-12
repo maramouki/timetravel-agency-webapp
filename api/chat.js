@@ -1,4 +1,4 @@
-import { mistral } from '@ai-sdk/mistral';
+import { google } from '@ai-sdk/google';
 import { generateText } from 'ai';
 
 export const runtime = 'edge';
@@ -8,14 +8,14 @@ export async function POST(req) {
         const body = await req.json();
         const { messages, systemPrompt } = body;
 
-        if (!process.env.MISTRAL_API_KEY) {
+        if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
             return new Response(
-                JSON.stringify({ error: 'MISTRAL_API_KEY is not configured' }),
+                JSON.stringify({ error: 'GOOGLE_GENERATIVE_AI_API_KEY is not configured on Vercel' }),
                 { status: 500, headers: { 'Content-Type': 'application/json' } }
             );
         }
 
-        // Normalise messages from AI SDK v6 format (parts) to standard format
+        // Normalise messages from SDK v6 format (parts) to standard format
         const cleanMessages = (messages || []).map(m => {
             let text = "";
             if (typeof m.content === 'string') text = m.content;
@@ -26,24 +26,20 @@ export async function POST(req) {
             return { role: m.role || 'user', content: text || " " };
         });
 
-        // Use generateText (non-streaming) to avoid toDataStreamResponse crash
+        // Use generateText (non-streaming, bulletproof)
         const { text } = await generateText({
-            model: mistral('mistral-small-latest'),
+            model: google('gemini-2.0-flash'),
             messages: cleanMessages,
-            system: systemPrompt || "Tu es l'assistant de TimeTravel Agency, expert en voyages temporels dans l'histoire.",
+            system: systemPrompt || "Tu es l'assistant virtuel de TimeTravel Agency, une agence de voyages temporels fictive. Tu es un expert passionné d'histoire qui aide les clients à choisir leur destination temporelle idéale. Réponds toujours en français, avec enthousiasme et expertise historique. Sois concis mais informatif.",
         });
 
-        // Return as a simple data stream format that useChat can parse
-        // Format: https://sdk.vercel.ai/docs/ai-sdk-ui/stream-protocol
+        // Build manual data stream response compatible with useChat
         const encoder = new TextEncoder();
         const stream = new ReadableStream({
             start(controller) {
-                // Send text part
                 controller.enqueue(encoder.encode(`0:${JSON.stringify(text)}\n`));
-                // Send finish message
-                controller.enqueue(encoder.encode(`e:{"finishReason":"stop","usage":{"promptTokens":0,"completionTokens":0}}\n`));
-                // Send done message
-                controller.enqueue(encoder.encode(`d:{"finishReason":"stop"}\n`));
+                controller.enqueue(encoder.encode(`e:${JSON.stringify({ finishReason: "stop", usage: { promptTokens: 0, completionTokens: 0 } })}\n`));
+                controller.enqueue(encoder.encode(`d:${JSON.stringify({ finishReason: "stop" })}\n`));
                 controller.close();
             }
         });
