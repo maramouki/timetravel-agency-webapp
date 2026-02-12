@@ -1,15 +1,9 @@
 import { mistral } from '@ai-sdk/mistral';
 import { streamText } from 'ai';
 
-export const config = {
-    runtime: 'edge',
-};
+export const maxDuration = 30;
 
-export default async function handler(req) {
-    if (req.method !== 'POST') {
-        return new Response('Method Not Allowed', { status: 405 });
-    }
-
+export async function POST(req) {
     try {
         const { messages, systemPrompt } = await req.json();
 
@@ -30,7 +24,7 @@ export default async function handler(req) {
     } catch (error) {
         console.error('Chat API Error:', error);
         return new Response(
-            JSON.stringify({ error: 'Internal Server Error', details: error.message }),
+            JSON.stringify({ error: error.message }),
             { status: 500, headers: { 'Content-Type': 'application/json' } }
         );
     }

@@ -7,19 +7,15 @@ const Chatbot = () => {
     const [isOpen, setIsOpen] = useState(false);
     const chatWindowRef = useRef(null);
 
-    useEffect(() => {
-        console.log("Current Deployment Commit: db3e4f1");
-    }, []);
-
     // Vercel AI SDK hook with System Prompt
     const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
         api: '/api/chat',
         onError: (err) => {
-            console.error("AI Error:", err);
+            console.error("AI SDK Error Details:", err);
         },
         initialMessages: [
             {
-                id: 'welcome',
+                id: 'welcome-' + Date.now(), // Unique ID for welcome message
                 role: 'assistant',
                 content: "Bienvenue chez TimeTravel Agency ! Je suis votre guide expert en époques révolues. Que vous soyez attiré par l'élégance de la Belle Époque à Paris, les frissons du Crétacé ou le génie de la Renaissance à Florence, je suis là pour tracer votre itinéraire temporel. Quelle destination vous fait rêver aujourd'hui ?"
             }
@@ -37,6 +33,16 @@ const Chatbot = () => {
     });
 
     const chatContainerRef = useRef(null);
+
+    // Debugging logs
+    useEffect(() => {
+        console.log("=== CHATBOT DEBUG ===");
+        console.log("Current Deployment Commit: v3-fix");
+        console.log("Current Messages Count:", messages.length);
+        console.log("Is Loading:", isLoading);
+        if (error) console.error("Current Error:", error);
+        console.log("=====================");
+    }, [messages, isLoading, error]);
 
     useEffect(() => {
         if (chatContainerRef.current) {
@@ -90,6 +96,12 @@ const Chatbot = () => {
                         ref={chatContainerRef}
                         className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-hide bg-slate-900/50"
                     >
+                        {messages.length === 0 && (
+                            <div className="flex justify-center items-center h-full">
+                                <span className="text-slate-500 text-xs italic">Initialisation du voyage temporel...</span>
+                            </div>
+                        )}
+
                         {messages.map((m) => (
                             <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                 <div className={`max-w-[80%] p-4 rounded-2xl text-sm leading-relaxed ${m.role === 'user'
@@ -100,6 +112,7 @@ const Chatbot = () => {
                                 </div>
                             </div>
                         ))}
+
                         {isLoading && (
                             <div className="flex justify-start">
                                 <div className="bg-slate-800/50 p-4 rounded-2xl flex items-center space-x-2 border border-white/5">
@@ -108,14 +121,15 @@ const Chatbot = () => {
                                         <div className="w-1.5 h-1.5 bg-time-gold rounded-full animate-bounce [animation-delay:-0.15s]" />
                                         <div className="w-1.5 h-1.5 bg-time-gold rounded-full animate-bounce" />
                                     </div>
-                                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Expert is typing...</span>
+                                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Expert explore le temps...</span>
                                 </div>
                             </div>
                         )}
+
                         {error && (
-                            <div className="flex justify-center">
-                                <div className="bg-red-500/10 border border-red-500/20 p-3 rounded-xl text-red-500 text-[10px] uppercase font-bold tracking-widest">
-                                    Connexion interrompue
+                            <div className="flex justify-center p-2">
+                                <div className="bg-red-500/10 border border-red-500/20 p-3 rounded-xl text-red-500 text-[10px] uppercase font-bold tracking-widest text-center">
+                                    Erreur de connexion : {error.message.includes('500') ? 'Clé API absente' : 'Réseau instable'}
                                 </div>
                             </div>
                         )}
@@ -129,12 +143,12 @@ const Chatbot = () => {
                         <input
                             value={input}
                             onChange={handleInputChange}
-                            className="flex-1 bg-slate-800 text-white text-sm px-4 py-3 rounded-xl focus:outline-none focus:ring-1 focus:ring-time-gold transition border border-transparent placeholder:text-slate-500"
-                            placeholder="Ask about your journey..."
+                            className="flex-1 bg-slate-800 text-white text-sm px-4 py-3 rounded-xl focus:outline-none focus:ring-1 focus:ring-time-gold transition border border-transparent placeholder:text-slate-500 outline-none"
+                            placeholder="Interrogez le temps..."
                         />
                         <button
                             type="submit"
-                            disabled={isLoading || !input}
+                            disabled={isLoading || !input.trim()}
                             className="bg-time-gold text-slate-950 p-3 rounded-xl hover:bg-white transition flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95"
                         >
                             <Send className="h-4 w-4" />
