@@ -5,7 +5,8 @@ Webapp moderne pour une agence de voyage temporel fictive, créée pour le proje
 ## 👥 Équipe
 1. GAMBUT Clémence
 2. LEONE Joanna
-3. ACHARD Leo
+3. ACHARD Léo
+4. SMEI Ibtihel
 
 ## 🛠️ Stack Technique
 - **Frontend** : React.js (Vite)
@@ -21,7 +22,7 @@ Webapp moderne pour une agence de voyage temporel fictive, créée pour le proje
 - **Expérience Premium** : Animations au scroll (ScrollTrigger) et micro-interactions.
 
 ## 🤖 IA Utilisées
-- **Code & UI** : Antigravity (Claude 3.5 Sonnet)
+- **Code & UI** : IDE : Antigravity, AI : Claude Opus 4.6 & Gemini 3 Flash
 - **Génération d'images** : Gemini (Images Hero des destinations)
 - **Chatbot** : OpenAI GPT-4o-mini
 
