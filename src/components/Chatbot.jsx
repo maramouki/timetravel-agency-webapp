@@ -8,7 +8,7 @@ const Chatbot = () => {
     const chatWindowRef = useRef(null);
 
     useEffect(() => {
-        console.log("Current Deployment Commit: 20173e3");
+        console.log("Current Deployment Commit: 2c4e3e3");
     }, []);
 
     // Vercel AI SDK hook with System Prompt
