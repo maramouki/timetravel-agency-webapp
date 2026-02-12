@@ -7,47 +7,43 @@ const Chatbot = () => {
     const [isOpen, setIsOpen] = useState(false);
     const chatWindowRef = useRef(null);
 
-    // Vercel AI SDK hook with System Prompt
-    const { messages = [], input = '', handleInputChange, handleSubmit, isLoading = false, error } = useChat({
+    // Vercel AI SDK hook
+    const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
         api: '/api/chat',
-        id: 'timetravel-chat-session', // Stable ID for persistence
         onError: (err) => {
-            console.error("AI SDK Error Details:", err);
+            console.error("CRITICAL AI ERROR:", err);
         },
         initialMessages: [
             {
-                id: 'welcome-msg',
+                id: 'welcome-init',
                 role: 'assistant',
-                content: "Bienvenue chez TimeTravel Agency ! Je suis votre guide expert en époques révolues. Que vous soyez attiré par l'élégance de la Belle Époque à Paris, les frissons du Crétacé ou le génie de la Renaissance à Florence, je suis là pour tracer votre itinéraire temporel. Quelle destination vous fait rêver aujourd'hui ?"
+                content: "Bienvenue chez TimeTravel Agency ! Je suis votre guide expert en époques révolues. Quelle destination vous fait rêver aujourd'hui ?"
             }
         ],
         body: {
-            systemPrompt: `Tu es l'assistant virtuel de TimeTravel Agency, une agence de voyage temporel de luxe.
-            Ton rôle : conseiller les clients sur les meilleures destinations temporelles.
-            Ton ton : Professionnel mais chaleureux, passionné d'histoire, toujours enthousiaste sans être trop familier.
-            Détails des destinations :
-            - Paris 1889 : Belle Époque, Tour Eiffel, Exposition Universelle, élégance.
-            - Crétacé -65M : Dinosaures, nature sauvage, aventure, survie (encadrée).
-            - Florence 1504 : Renaissance, art, Michel-Ange, Léonard de Vinci.
-            Réponds toujours avec cette expertise.`
+            systemPrompt: "Tu es un guide expert temporel. Ton ton est professionnel et passionné."
         }
     });
 
     const chatContainerRef = useRef(null);
 
-    // Debugging logs
+    // Ultra Debugging & Network Check
     useEffect(() => {
-        console.log("=== CHATBOT DEBUG V-FINAL ===");
-        console.log("Current Deployment: v-final-debug");
-        console.log("Messages Data:", messages);
-        console.log("Messages Count:", messages?.length);
-        console.log("Input:", input || 'empty');
-        if (error) console.error("API/SDK Error:", error);
-        console.log("==============================");
-    }, [messages, isLoading, error, input]);
+        console.log("=== CHATBOT DEBUG ULTRA ===");
+        console.log("Status: Checking API...");
+        fetch('/api/chat', { method: 'GET' }).then(r => {
+            console.log("API Reachable (GET test):", r.status !== 404);
+        }).catch(e => console.log("API Unreachable:", e));
+
+        console.log("Deployment: v-ultra-stable");
+        console.log("Messages List:", messages);
+        console.log("Messages Length:", messages?.length);
+        console.log("Input State:", input === '' ? 'Empty String' : typeof input);
+        console.log("============================");
+    }, [messages, input]);
 
     useEffect(() => {
-        if (chatContainerRef.current && messages) {
+        if (chatContainerRef.current) {
             chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
         }
     }, [messages]);
@@ -61,12 +57,12 @@ const Chatbot = () => {
         }
     }, [isOpen]);
 
-    // Ensure we always have at least the welcome message for UI display
-    const displayMessages = messages.length > 0 ? messages : [
+    // Force display logic
+    const finalMessages = (messages && messages.length > 0) ? messages : [
         {
-            id: 'ui-fallback-welcome',
+            id: 'fallback-fixed',
             role: 'assistant',
-            content: "Initialisation de la liaison temporelle... Bienvenue chez TimeTravel Agency ! Comment puis-je vous aider ?"
+            content: "Bienvenue chez TimeTravel Agency ! Je suis votre guide expert. Comment puis-je vous aider à explorer le temps ?"
         }
     ];
 
@@ -85,7 +81,7 @@ const Chatbot = () => {
                                 <div className="w-10 h-10 rounded-full bg-time-gold/10 flex items-center justify-center border border-time-gold/30">
                                     <Bot className="text-time-gold h-5 w-5" />
                                 </div>
-                                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-slate-900 rounded-full" title="AI Online" />
+                                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-slate-900 rounded-full" />
                             </div>
                             <div>
                                 <div className="text-white font-bold text-sm">Time Assistant</div>
@@ -107,7 +103,7 @@ const Chatbot = () => {
                         ref={chatContainerRef}
                         className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-hide bg-slate-900/50"
                     >
-                        {displayMessages.map((m) => (
+                        {finalMessages.map((m) => (
                             <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                 <div className={`max-w-[80%] p-4 rounded-2xl text-sm leading-relaxed ${m.role === 'user'
                                     ? 'bg-time-gold text-slate-950 font-medium rounded-tr-none'
