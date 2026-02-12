@@ -9,54 +9,46 @@ const Chatbot = () => {
 
     const [localInput, setLocalInput] = useState('');
 
-    // Vercel AI SDK hook
+    // Vercel AI SDK hook - We keep it for the stream logic
     const chat = useChat({
         api: '/api/chat',
-        onError: (err) => { console.error("SDK_ERR:", err); },
-        initialMessages: [
-            { id: 'welcome-001', role: 'assistant', content: "Bienvenue chez TimeTravel Agency ! Je suis votre guide expert. Quelle destination vous fait rêver ?" }
-        ]
+        onError: (err) => { console.error("SDK_CRITICAL_ERR:", err); },
     });
 
-    // Diagnostique profond
+    const { messages = [], isLoading, error, status } = chat;
+
+    // Diagnostic Ultra pour vérifier les données en temps réel
     useEffect(() => {
-        console.log("=== API PAYLOAD DIAGNOSTIC ===");
-        console.log("Hook Keys:", Object.keys(chat));
-        console.log("Current Status:", chat.status);
-        console.log("Deployment: v-fixed-payload");
-        console.log("==============================");
-    }, [chat]);
+        console.log("=== CHATBOT ULTRA ROBUST ===");
+        console.log("SDK Status:", status);
+        console.log("SDK Messages Count:", messages.length);
+        console.log("Deployment: v-ultra-robust");
+        console.log("============================");
+    }, [messages, status]);
 
-    // Extraction sécurisée
-    const messages = chat.messages || [];
-    const isLoading = chat.isLoading || chat.status === 'streaming' || chat.status === 'submitted';
-    const error = chat.error;
-
-    // Gestionnaire de changement local
     const handleLocalInputChange = (e) => {
         setLocalInput(e.target.value);
     };
 
-    // Gestionnaire de soumission local (Format objet corrigé)
     const handleLocalSubmit = async (e) => {
         if (e) e.preventDefault();
         const text = localInput.trim();
-        if (!text || isLoading) return;
+        if (!text || isLoading || status === 'submitted') return;
 
         try {
+            setLocalInput(''); // On vide tout de suite pour le confort
             if (chat.sendMessage) {
-                // Le SDK semble attendre { text: "..." } d'après l'erreur "in operator"
+                // Tentative 1: Format objet complet (souvent requis par les nouvelles API)
                 await chat.sendMessage({ text: text });
-                setLocalInput('');
             } else if (chat.append) {
                 await chat.append({ role: 'user', content: text });
-                setLocalInput('');
             } else if (chat.handleSubmit) {
                 chat.handleSubmit(e);
-                setLocalInput('');
             }
         } catch (err) {
-            console.error("Submission Error:", err);
+            console.error("CRITICAL SEND ERROR:", err);
+            // Si l'objet crash, on tente le texte brut en dernier recours
+            if (chat.sendMessage) await chat.sendMessage(text);
         }
     };
 
@@ -77,10 +69,15 @@ const Chatbot = () => {
         }
     }, [isOpen]);
 
-    // Fallback visuel
-    const finalMessages = messages.length > 0 ? messages : [
-        { id: 'ui-welcome', role: 'assistant', content: "Bienvenue chez TimeTravel Agency ! Je suis votre guide expert. Comment puis-je vous aider ?" }
-    ];
+    // UI RENDERING: On force le message de bienvenue au début de la liste quoi qu'il arrive
+    const welcomeMessage = {
+        id: 'permanent-welcome',
+        role: 'assistant',
+        content: "Bienvenue chez TimeTravel Agency ! Je suis votre guide expert. Quelle destination vous fait rêver aujourd'hui ?"
+    };
+
+    // On combine le message de bienvenue avec les messages du SDK
+    const allDisplayMessages = [welcomeMessage, ...messages];
 
     return (
         <div className="fixed bottom-8 right-8 z-[100] font-sans">
@@ -119,7 +116,7 @@ const Chatbot = () => {
                         ref={chatContainerRef}
                         className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-hide bg-slate-900/50"
                     >
-                        {finalMessages.map((m) => (
+                        {allDisplayMessages.map((m) => (
                             <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                 <div className={`max-w-[80%] p-4 rounded-2xl text-sm leading-relaxed ${m.role === 'user'
                                     ? 'bg-time-gold text-slate-950 font-medium rounded-tr-none'
