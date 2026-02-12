@@ -9,7 +9,7 @@ const Chatbot = () => {
 
     const [localInput, setLocalInput] = useState('');
 
-    // Vercel AI SDK hook - We keep it for the stream logic
+    // Vercel AI SDK hook
     const chat = useChat({
         api: '/api/chat',
         onError: (err) => { console.error("SDK_CRITICAL_ERR:", err); },
@@ -17,13 +17,17 @@ const Chatbot = () => {
 
     const { messages = [], isLoading, error, status } = chat;
 
-    // Diagnostic Ultra pour vérifier les données en temps réel
+    // Diagnostic Ultra - On inspecte le CONTENU des messages
     useEffect(() => {
-        console.log("=== CHATBOT ULTRA ROBUST ===");
+        console.log("=== CHATBOT CONTENT DEBUG ===");
         console.log("SDK Status:", status);
-        console.log("SDK Messages Count:", messages.length);
-        console.log("Deployment: v-ultra-robust");
-        console.log("============================");
+        console.log("Messages List:", messages);
+        if (messages.length > 0) {
+            console.log("First Message Structure:", messages[0]);
+            console.log("First Message Content:", messages[0].content || messages[0].text || "UNDEFINED");
+        }
+        console.log("Deployment: v-debug-content");
+        console.log("==============================");
     }, [messages, status]);
 
     const handleLocalInputChange = (e) => {
@@ -36,9 +40,9 @@ const Chatbot = () => {
         if (!text || isLoading || status === 'submitted') return;
 
         try {
-            setLocalInput(''); // On vide tout de suite pour le confort
+            setLocalInput('');
             if (chat.sendMessage) {
-                // Tentative 1: Format objet complet (souvent requis par les nouvelles API)
+                // On passe l'objet attendu par les nouvelles versions
                 await chat.sendMessage({ text: text });
             } else if (chat.append) {
                 await chat.append({ role: 'user', content: text });
@@ -46,10 +50,24 @@ const Chatbot = () => {
                 chat.handleSubmit(e);
             }
         } catch (err) {
-            console.error("CRITICAL SEND ERROR:", err);
-            // Si l'objet crash, on tente le texte brut en dernier recours
+            console.error("SEND ERROR:", err);
             if (chat.sendMessage) await chat.sendMessage(text);
         }
+    };
+
+    // Helper pour afficher le contenu peu importe le nom de la clé
+    const renderMessageContent = (m) => {
+        if (!m) return "";
+        // Cas standard
+        if (typeof m.content === 'string' && m.content) return m.content;
+        // Cas nouvelle API
+        if (typeof m.text === 'string' && m.text) return m.text;
+        // Cas tableau de parties (multimodal)
+        if (Array.isArray(m.content)) {
+            return m.content.map(p => p.text || p.content || "").join("");
+        }
+        // Fallback ultime : on affiche l'objet si possible pour voir ce qu'il y a dedans
+        return m.content ? String(m.content) : (m.text ? String(m.text) : "...");
     };
 
     const chatContainerRef = useRef(null);
@@ -69,14 +87,12 @@ const Chatbot = () => {
         }
     }, [isOpen]);
 
-    // UI RENDERING: On force le message de bienvenue au début de la liste quoi qu'il arrive
     const welcomeMessage = {
         id: 'permanent-welcome',
         role: 'assistant',
         content: "Bienvenue chez TimeTravel Agency ! Je suis votre guide expert. Quelle destination vous fait rêver aujourd'hui ?"
     };
 
-    // On combine le message de bienvenue avec les messages du SDK
     const allDisplayMessages = [welcomeMessage, ...messages];
 
     return (
@@ -122,7 +138,7 @@ const Chatbot = () => {
                                     ? 'bg-time-gold text-slate-950 font-medium rounded-tr-none'
                                     : 'bg-slate-800 text-white rounded-tl-none border border-white/5 shadow-md'
                                     }`}>
-                                    {m.content}
+                                    {renderMessageContent(m)}
                                 </div>
                             </div>
                         ))}
