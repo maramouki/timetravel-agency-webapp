@@ -10,12 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "gsap": "^3.12.5",
-    "lucide-react": "^0.460.0",
+    "@ai-sdk/mistral": "^3.0.19",
     "ai": "^4.0.0",
     "clsx": "^2.1.1",
+    "gsap": "^3.12.5",
+    "lucide-react": "^0.460.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "tailwind-merge": "^2.5.4"
   },
   "devDependencies": {
