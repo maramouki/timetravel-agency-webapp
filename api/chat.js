@@ -1,4 +1,4 @@
-import { google } from '@ai-sdk/google';
+import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 
 export const runtime = 'edge';
@@ -8,9 +8,9 @@ export async function POST(req) {
         const body = await req.json();
         const { messages, systemPrompt } = body;
 
-        if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+        if (!process.env.OPENAI_API_KEY) {
             return new Response(
-                JSON.stringify({ error: 'GOOGLE_GENERATIVE_AI_API_KEY is not configured on Vercel' }),
+                JSON.stringify({ error: 'OPENAI_API_KEY is not configured on Vercel' }),
                 { status: 500, headers: { 'Content-Type': 'application/json' } }
             );
         }
@@ -26,9 +26,8 @@ export async function POST(req) {
             return { role: m.role || 'user', content: text || " " };
         });
 
-        // Use generateText (non-streaming, bulletproof)
         const { text } = await generateText({
-            model: google('gemini-2.0-flash'),
+            model: openai('gpt-4o-mini'),
             messages: cleanMessages,
             system: systemPrompt || "Tu es l'assistant virtuel de TimeTravel Agency, une agence de voyages temporels fictive. Tu es un expert passionné d'histoire qui aide les clients à choisir leur destination temporelle idéale. Réponds toujours en français, avec enthousiasme et expertise historique. Sois concis mais informatif.",
         });
