@@ -1,14 +1,19 @@
 import { mistral } from '@ai-sdk/mistral';
 import { streamText } from 'ai';
 
-export const maxDuration = 30;
+export const config = {
+    runtime: 'edge',
+};
 
-export async function POST(req) {
+export default async function handler(req) {
+    if (req.method !== 'POST') {
+        return new Response('Method Not Allowed', { status: 405 });
+    }
+
     try {
         const { messages, systemPrompt } = await req.json();
 
         if (!process.env.MISTRAL_API_KEY) {
-            console.error('MISTRAL_API_KEY is missing');
             return new Response(
                 JSON.stringify({ error: 'MISTRAL_API_KEY is not configured on Vercel' }),
                 { status: 500, headers: { 'Content-Type': 'application/json' } }
@@ -25,7 +30,7 @@ export async function POST(req) {
     } catch (error) {
         console.error('Chat API Error:', error);
         return new Response(
-            JSON.stringify({ error: error.message }),
+            JSON.stringify({ error: 'Internal Server Error', details: error.message }),
             { status: 500, headers: { 'Content-Type': 'application/json' } }
         );
     }

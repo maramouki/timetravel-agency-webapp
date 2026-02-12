@@ -8,7 +8,7 @@ const Chatbot = () => {
     const chatWindowRef = useRef(null);
 
     useEffect(() => {
-        console.log("Current Deployment Commit: b0dc6fb");
+        console.log("Current Deployment Commit: db3e4f1");
     }, []);
 
     // Vercel AI SDK hook with System Prompt
@@ -21,7 +21,7 @@ const Chatbot = () => {
             {
                 id: 'welcome',
                 role: 'assistant',
-                content: "Bienvenue chez TimeTravel Agency ! Je suis votre guide expert en époques révolues. Que vous soyez attiré par l'élégance de la Belle Époque à paris, les frissons du Crétacé ou le génie de la Renaissance à Florence, je suis là pour tracer votre itinéraire temporel. Quelle destination vous fait rêver aujourd'hui ?"
+                content: "Bienvenue chez TimeTravel Agency ! Je suis votre guide expert en époques révolues. Que vous soyez attiré par l'élégance de la Belle Époque à Paris, les frissons du Crétacé ou le génie de la Renaissance à Florence, je suis là pour tracer votre itinéraire temporel. Quelle destination vous fait rêver aujourd'hui ?"
             }
         ],
         body: {
@@ -90,22 +90,16 @@ const Chatbot = () => {
                         ref={chatContainerRef}
                         className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-hide bg-slate-900/50"
                     >
-                        {messages && messages.length > 0 ? (
-                            messages.map((m) => (
-                                <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                    <div className={`max-w-[80%] p-4 rounded-2xl text-sm leading-relaxed ${m.role === 'user'
-                                        ? 'bg-time-gold text-slate-950 font-medium rounded-tr-none'
-                                        : 'bg-slate-800 text-white rounded-tl-none border border-white/5 shadow-md'
-                                        }`}>
-                                        {m.content}
-                                    </div>
+                        {messages.map((m) => (
+                            <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                <div className={`max-w-[80%] p-4 rounded-2xl text-sm leading-relaxed ${m.role === 'user'
+                                    ? 'bg-time-gold text-slate-950 font-medium rounded-tr-none'
+                                    : 'bg-slate-800 text-white rounded-tl-none border border-white/5 shadow-md'
+                                    }`}>
+                                    {m.content}
                                 </div>
-                            ))
-                        ) : (
-                            <div className="flex justify-center items-center h-full text-slate-500 text-xs italic">
-                                Chargement de l'expert temporel...
                             </div>
-                        )}
+                        ))}
                         {isLoading && (
                             <div className="flex justify-start">
                                 <div className="bg-slate-800/50 p-4 rounded-2xl flex items-center space-x-2 border border-white/5">
