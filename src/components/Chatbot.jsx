@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageSquare, X, Send, Sparkles, User, Bot } from 'lucide-react';
-import { useChat } from 'ai/react';
+import { useChat } from '@ai-sdk/react';
 import { gsap } from 'gsap';
 
 const Chatbot = () => {
