@@ -7,40 +7,43 @@ const Chatbot = () => {
     const [isOpen, setIsOpen] = useState(false);
     const chatWindowRef = useRef(null);
 
-    // Vercel AI SDK hook
-    const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
+    // Vercel AI SDK hook with explicit fallback defaults
+    const chat = useChat({
         api: '/api/chat',
         onError: (err) => {
-            console.error("CRITICAL AI ERROR:", err);
+            console.error("SDK_ERROR:", err);
         },
         initialMessages: [
             {
-                id: 'welcome-init',
+                id: 'init-msg-001',
                 role: 'assistant',
                 content: "Bienvenue chez TimeTravel Agency ! Je suis votre guide expert en époques révolues. Quelle destination vous fait rêver aujourd'hui ?"
             }
-        ],
-        body: {
-            systemPrompt: "Tu es un guide expert temporel. Ton ton est professionnel et passionné."
-        }
+        ]
     });
+
+    // Destructure with secondary safety
+    const {
+        messages = [],
+        input = '',
+        handleInputChange,
+        handleSubmit,
+        isLoading = false,
+        error
+    } = chat;
 
     const chatContainerRef = useRef(null);
 
-    // Ultra Debugging & Network Check
+    // Deep Diagnostic Log
     useEffect(() => {
-        console.log("=== CHATBOT DEBUG ULTRA ===");
-        console.log("Status: Checking API...");
-        fetch('/api/chat', { method: 'GET' }).then(r => {
-            console.log("API Reachable (GET test):", r.status !== 404);
-        }).catch(e => console.log("API Unreachable:", e));
-
-        console.log("Deployment: v-ultra-stable");
-        console.log("Messages List:", messages);
-        console.log("Messages Length:", messages?.length);
-        console.log("Input State:", input === '' ? 'Empty String' : typeof input);
-        console.log("============================");
-    }, [messages, input]);
+        console.log("=== CHATBOT DEEP DIAGNOSTIC ===");
+        console.log("Hook Result Object:", chat);
+        console.log("Messages Array:", messages);
+        console.log("Input State:", `"${input}"`);
+        console.log("Has Input Change Function:", typeof handleInputChange === 'function');
+        console.log("Deployment: v-hyper-stable");
+        console.log("===============================");
+    }, [chat, messages, input]);
 
     useEffect(() => {
         if (chatContainerRef.current) {
@@ -57,12 +60,12 @@ const Chatbot = () => {
         }
     }, [isOpen]);
 
-    // Force display logic
-    const finalMessages = (messages && messages.length > 0) ? messages : [
+    // UI Fallback : If messages is empty (SDK failure), we show a local message
+    const finalMessages = messages.length > 0 ? messages : [
         {
-            id: 'fallback-fixed',
+            id: 'local-welcome',
             role: 'assistant',
-            content: "Bienvenue chez TimeTravel Agency ! Je suis votre guide expert. Comment puis-je vous aider à explorer le temps ?"
+            content: "Liaison temporelle établie. Bienvenue chez TimeTravel Agency ! Que puis-je faire pour vous ?"
         }
     ];
 
