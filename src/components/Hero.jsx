@@ -43,26 +43,26 @@ const Hero = () => {
                 {/* Search Bar / Booking Bar */}
                 <div ref={searchBarRef} className="max-w-4xl mx-auto bg-white rounded-3xl p-2 shadow-2xl flex flex-col md:flex-row items-stretch md:items-center space-y-4 md:space-y-0 md:space-x-4">
                     <div className="flex-1 flex items-center px-4 border-b md:border-b-0 md:border-r border-slate-100 py-4">
-                        <MapPin className="text-time-gold mr-3 h-5 w-5" />
-                        <div className="text-left">
+                        <MapPin className="text-time-gold mr-3 h-5 w-5 shrink-0" />
+                        <div className="text-left w-full">
                             <label className="block text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-0.5">Location</label>
-                            <input type="text" placeholder="Where to go?" className="text-slate-900 font-semibold focus:outline-none w-full placeholder:text-slate-300" />
+                            <input type="text" placeholder="Where to go?" className="text-slate-900 font-semibold focus:outline-none w-full bg-transparent placeholder:text-slate-300" />
                         </div>
                     </div>
 
-                    <div className="flex-1 flex items-center px-4 border-b md:border-b-0 md:border-r border-slate-100 py-4">
-                        <Calendar className="text-time-gold mr-3 h-5 w-5" />
-                        <div className="text-left">
+                    <div className="flex-1 flex items-center px-4 border-b md:border-b-0 md:border-r border-slate-100 py-4 font-sans">
+                        <Calendar className="text-time-gold mr-3 h-5 w-5 shrink-0" />
+                        <div className="text-left w-full">
                             <label className="block text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-0.5">Check In</label>
-                            <input type="text" placeholder="Add date" className="text-slate-900 font-semibold focus:outline-none w-full placeholder:text-slate-300" />
+                            <input type="date" className="text-slate-900 font-semibold focus:outline-none w-full bg-transparent cursor-pointer [color-scheme:light]" />
                         </div>
                     </div>
 
-                    <div className="flex-1 flex items-center px-4 border-b md:border-b-0 md:border-r border-slate-100 py-4">
-                        <Users className="text-time-gold mr-3 h-5 w-5" />
-                        <div className="text-left">
+                    <div className="flex-1 flex items-center px-4 border-b md:border-b-0 md:border-r border-slate-100 py-4 font-sans">
+                        <Users className="text-time-gold mr-3 h-5 w-5 shrink-0" />
+                        <div className="text-left w-full">
                             <label className="block text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-0.5">Participants</label>
-                            <input type="text" placeholder="Add guests" className="text-slate-900 font-semibold focus:outline-none w-full placeholder:text-slate-300" />
+                            <input type="number" min="1" placeholder="Add guests" className="text-slate-900 font-semibold focus:outline-none w-full bg-transparent placeholder:text-slate-300" />
                         </div>
                     </div>
 
