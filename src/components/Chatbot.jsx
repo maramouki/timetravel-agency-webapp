@@ -17,17 +17,17 @@ const Chatbot = () => {
 
     const { messages = [], isLoading, error, status } = chat;
 
-    // Diagnostic Ultra - On inspecte le CONTENU des messages
+    // Diagnostic précis du rendu
     useEffect(() => {
-        console.log("=== CHATBOT CONTENT DEBUG ===");
+        console.log("=== CHATBOT RENDER FIX ===");
         console.log("SDK Status:", status);
-        console.log("Messages List:", messages);
+        console.log("Messages Data:", messages);
         if (messages.length > 0) {
-            console.log("First Message Structure:", messages[0]);
-            console.log("First Message Content:", messages[0].content || messages[0].text || "UNDEFINED");
+            const last = messages[messages.length - 1];
+            console.log("Last Message Parts:", last.parts);
         }
-        console.log("Deployment: v-debug-content");
-        console.log("==============================");
+        console.log("Deployment: v-render-fix");
+        console.log("============================");
     }, [messages, status]);
 
     const handleLocalInputChange = (e) => {
@@ -37,12 +37,12 @@ const Chatbot = () => {
     const handleLocalSubmit = async (e) => {
         if (e) e.preventDefault();
         const text = localInput.trim();
-        if (!text || isLoading || status === 'submitted') return;
+        if (!text || isLoading || status === 'submitted' || status === 'streaming') return;
 
         try {
             setLocalInput('');
             if (chat.sendMessage) {
-                // On passe l'objet attendu par les nouvelles versions
+                // Tentative d'envoi format objet (requis par les nouvelles versions)
                 await chat.sendMessage({ text: text });
             } else if (chat.append) {
                 await chat.append({ role: 'user', content: text });
@@ -51,23 +51,35 @@ const Chatbot = () => {
             }
         } catch (err) {
             console.error("SEND ERROR:", err);
+            // Fallback texte brut
             if (chat.sendMessage) await chat.sendMessage(text);
         }
     };
 
-    // Helper pour afficher le contenu peu importe le nom de la clé
+    // Helper de rendu ultra-robuste
     const renderMessageContent = (m) => {
         if (!m) return "";
-        // Cas standard
+
+        // 1. Support du format 'parts' (Nouveau SDK)
+        if (m.parts && Array.isArray(m.parts)) {
+            return m.parts
+                .filter(p => p.type === 'text')
+                .map(p => p.text)
+                .join("");
+        }
+
+        // 2. Format standard 'content' string
         if (typeof m.content === 'string' && m.content) return m.content;
-        // Cas nouvelle API
+
+        // 3. Format 'text' direct
         if (typeof m.text === 'string' && m.text) return m.text;
-        // Cas tableau de parties (multimodal)
+
+        // 4. Format 'content' array
         if (Array.isArray(m.content)) {
             return m.content.map(p => p.text || p.content || "").join("");
         }
-        // Fallback ultime : on affiche l'objet si possible pour voir ce qu'il y a dedans
-        return m.content ? String(m.content) : (m.text ? String(m.text) : "...");
+
+        return "...";
     };
 
     const chatContainerRef = useRef(null);
