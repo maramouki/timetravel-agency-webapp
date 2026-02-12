@@ -7,10 +7,10 @@ Développer une webapp moderne et interactive qui met en scène l’agence et se
 
 ## 👥 Équipe (4 personnes)
 *Indiquez les noms ici :*
-1. [Nom Prénom]
-2. [Nom Prénom]
-3. [Nom Prénom]
-4. [Nom Prénom]
+1. GAMBUT Clémence
+2. LEONE Joanna
+3. ACHARD Leo
+4. 
 
 ---
 
@@ -32,8 +32,8 @@ Développer une webapp moderne et interactive qui met en scène l’agence et se
 ## 🛠️ Stack Technique & Outils
 
 - **Framework** : React / Vite + Tailwind CSS
-- **Animations** : Framer Motion / AOS
-- **Chatbot / IA** : Mistral AI (API) / Groq / Vercel AI SDK
+- **Animations** : GSAP
+- **Chatbot / IA** : Mistral AI (API) / Vercel AI SDK
 - **Design/Maquettage** : v0.dev / Uizard / Framer AI
 - **Hébergement** : Vercel / Netlify
 

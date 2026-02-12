@@ -8,13 +8,16 @@ const Chatbot = () => {
     const chatWindowRef = useRef(null);
 
     // Vercel AI SDK hook with System Prompt
-    const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
+    const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
         api: '/api/chat',
+        onError: (err) => {
+            console.error("AI Error:", err);
+        },
         initialMessages: [
             {
                 id: 'welcome',
                 role: 'assistant',
-                content: "Bienvenue chez TimeTravel Agency ! Je suis votre guide expert en époques révolues. Que vous soyez attiré par l'élégance de la Belle Époque à Paris, les frissons du Crétacé ou le génie de la Renaissance à Florence, je suis là pour tracer votre itinéraire temporel. Quelle destination vous fait rêver aujourd'hui ?"
+                content: "Bienvenue chez TimeTravel Agency ! Je suis votre guide expert en époques révolues. Que vous soyez attiré par l'élégance de la Belle Époque à paris, les frissons du Crétacé ou le génie de la Renaissance à Florence, je suis là pour tracer votre itinéraire temporel. Quelle destination vous fait rêver aujourd'hui ?"
             }
         ],
         body: {
@@ -57,13 +60,15 @@ const Chatbot = () => {
                     {/* Header */}
                     <div className="bg-slate-900 p-6 border-b border-slate-800 flex justify-between items-center">
                         <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 rounded-full bg-time-gold/10 flex items-center justify-center border border-time-gold/30">
-                                <Bot className="text-time-gold h-5 w-5" />
+                            <div className="relative">
+                                <div className="w-10 h-10 rounded-full bg-time-gold/10 flex items-center justify-center border border-time-gold/30">
+                                    <Bot className="text-time-gold h-5 w-5" />
+                                </div>
+                                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-slate-900 rounded-full" title="AI Online" />
                             </div>
                             <div>
                                 <div className="text-white font-bold text-sm">Time Assistant</div>
                                 <div className="text-[10px] text-time-gold font-bold uppercase tracking-widest flex items-center">
-                                    <span className="w-1.5 h-1.5 bg-time-gold rounded-full mr-1.5 animate-pulse" />
                                     Historical Expert
                                 </div>
                             </div>
@@ -93,8 +98,20 @@ const Chatbot = () => {
                         ))}
                         {isLoading && (
                             <div className="flex justify-start">
-                                <div className="bg-slate-800 p-4 rounded-2xl text-slate-400 text-sm italic animate-pulse">
-                                    The oracle is consulting the timelines...
+                                <div className="bg-slate-800/50 p-4 rounded-2xl flex items-center space-x-2 border border-white/5">
+                                    <div className="flex space-x-1">
+                                        <div className="w-1.5 h-1.5 bg-time-gold rounded-full animate-bounce [animation-delay:-0.3s]" />
+                                        <div className="w-1.5 h-1.5 bg-time-gold rounded-full animate-bounce [animation-delay:-0.15s]" />
+                                        <div className="w-1.5 h-1.5 bg-time-gold rounded-full animate-bounce" />
+                                    </div>
+                                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Expert is typing...</span>
+                                </div>
+                            </div>
+                        )}
+                        {error && (
+                            <div className="flex justify-center">
+                                <div className="bg-red-500/10 border border-red-500/20 p-3 rounded-xl text-red-500 text-[10px] uppercase font-bold tracking-widest">
+                                    Connexion interrompue
                                 </div>
                             </div>
                         )}
