@@ -11,7 +11,7 @@ Webapp moderne pour une agence de voyage temporel fictive, créée pour le proje
 - **Frontend** : React.js (Vite)
 - **Styling** : Tailwind CSS
 - **Animations** : GSAP (GreenSock Animation Platform)
-- **IA** : Mistral AI via Vercel AI SDK
+- **IA** : OpenAI (GPT-4o-mini) via Vercel AI SDK
 - **Icônes** : Lucide React
 
 ## ✨ Features Implémentées
@@ -23,11 +23,15 @@ Webapp moderne pour une agence de voyage temporel fictive, créée pour le proje
 ## 🤖 IA Utilisées
 - **Code & UI** : Antigravity (Claude 3.5 Sonnet)
 - **Génération d'images** : Gemini (Images Hero des destinations)
-- **Chatbot** : Mistral AI Small
+- **Chatbot** : OpenAI GPT-4o-mini
 
 ## 📄 Installation & Run
 1. `npm install`
-2. `npm run dev`
+2. Créer un fichier `.env` avec `OPENAI_API_KEY=votre_clé`
+3. `npm run dev`
+
+## 🚀 Déploiement Vercel
+- Ajouter la variable d'environnement `OPENAI_API_KEY` dans Settings > Environment Variables
 
 ---
 *Projet pédagogique — Ynov AI*
