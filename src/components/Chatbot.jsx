@@ -20,38 +20,43 @@ const Chatbot = () => {
 
     // Diagnostique profond
     useEffect(() => {
-        console.log("=== API FIXED DIAGNOSTIC ===");
+        console.log("=== API PAYLOAD DIAGNOSTIC ===");
         console.log("Hook Keys:", Object.keys(chat));
-        console.log("Messages Data:", chat.messages);
-        console.log("Deployment: v-fixed-api");
-        console.log("============================");
+        console.log("Current Status:", chat.status);
+        console.log("Deployment: v-fixed-payload");
+        console.log("==============================");
     }, [chat]);
 
     // Extraction sécurisée
     const messages = chat.messages || [];
-    const isLoading = chat.isLoading || chat.status === 'streaming';
+    const isLoading = chat.isLoading || chat.status === 'streaming' || chat.status === 'submitted';
     const error = chat.error;
 
-    // Gestionnaire de changement local (Plus robuste)
+    // Gestionnaire de changement local
     const handleLocalInputChange = (e) => {
         setLocalInput(e.target.value);
     };
 
-    // Gestionnaire de soumission local
-    const handleLocalSubmit = (e) => {
-        e.preventDefault();
+    // Gestionnaire de soumission local (Format objet corrigé)
+    const handleLocalSubmit = async (e) => {
+        if (e) e.preventDefault();
         const text = localInput.trim();
-        if (!text) return;
+        if (!text || isLoading) return;
 
-        if (chat.sendMessage) {
-            chat.sendMessage(text);
-            setLocalInput('');
-        } else if (chat.append) {
-            chat.append({ role: 'user', content: text });
-            setLocalInput('');
-        } else if (chat.handleSubmit) {
-            chat.handleSubmit(e);
-            setLocalInput('');
+        try {
+            if (chat.sendMessage) {
+                // Le SDK semble attendre { text: "..." } d'après l'erreur "in operator"
+                await chat.sendMessage({ text: text });
+                setLocalInput('');
+            } else if (chat.append) {
+                await chat.append({ role: 'user', content: text });
+                setLocalInput('');
+            } else if (chat.handleSubmit) {
+                chat.handleSubmit(e);
+                setLocalInput('');
+            }
+        } catch (err) {
+            console.error("Submission Error:", err);
         }
     };
 
