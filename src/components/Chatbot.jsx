@@ -7,43 +7,55 @@ const Chatbot = () => {
     const [isOpen, setIsOpen] = useState(false);
     const chatWindowRef = useRef(null);
 
-    // Vercel AI SDK hook with explicit fallback defaults
+    // Vercel AI SDK hook
     const chat = useChat({
         api: '/api/chat',
-        onError: (err) => {
-            console.error("SDK_ERROR:", err);
-        },
+        onError: (err) => { console.error("SDK_ERR:", err); },
         initialMessages: [
-            {
-                id: 'init-msg-001',
-                role: 'assistant',
-                content: "Bienvenue chez TimeTravel Agency ! Je suis votre guide expert en époques révolues. Quelle destination vous fait rêver aujourd'hui ?"
-            }
+            { id: 'welcome-001', role: 'assistant', content: "Bienvenue chez TimeTravel Agency ! Je suis votre guide expert. Quelle destination vous fait rêver ?" }
         ]
     });
 
-    // Destructure with secondary safety
-    const {
-        messages = [],
-        input = '',
-        handleInputChange,
-        handleSubmit,
-        isLoading = false,
-        error
-    } = chat;
+    // Diagnostique profond pour identifier les noms des fonctions
+    useEffect(() => {
+        console.log("=== UNIVERSAL DIAGNOSTIC ===");
+        console.log("Hook Keys:", Object.keys(chat));
+        console.log("Messages Data:", chat.messages);
+        console.log("Is Input Present:", 'input' in chat);
+        console.log("Input Type:", typeof chat.input);
+        console.log("Found handleInputChange:", typeof chat.handleInputChange === 'function');
+        console.log("Found handleSubmit:", typeof chat.handleSubmit === 'function');
+        console.log("Found sendMessage (New API?):", typeof chat.sendMessage === 'function');
+        console.log("Deployment: v-universal"); // Updated commit log
+        console.log("============================");
+    }, [chat]);
+
+    // Extraction sécurisée avec fallbacks dynamiques
+    const messages = chat.messages || [];
+    const isLoading = chat.isLoading || false;
+    const error = chat.error;
+    const input = chat.input || '';
+
+    // Gestionnaire de changement universel
+    const onTextChange = chat.handleInputChange || ((e) => {
+        if (chat.setInput) chat.setInput(e.target.value);
+    });
+
+    // Gestionnaire de soumission universel
+    const onFormSubmit = (e) => {
+        e.preventDefault();
+        if (chat.handleSubmit) {
+            chat.handleSubmit(e);
+        } else if (chat.append) {
+            chat.append({ role: 'user', content: input });
+            if (chat.setInput) chat.setInput('');
+        } else if (chat.sendMessage) {
+            chat.sendMessage(input);
+            if (chat.setInput) chat.setInput('');
+        }
+    };
 
     const chatContainerRef = useRef(null);
-
-    // Deep Diagnostic Log
-    useEffect(() => {
-        console.log("=== CHATBOT DEEP DIAGNOSTIC ===");
-        console.log("Hook Result Object:", chat);
-        console.log("Messages Array:", messages);
-        console.log("Input State:", `"${input}"`);
-        console.log("Has Input Change Function:", typeof handleInputChange === 'function');
-        console.log("Deployment: v-hyper-stable");
-        console.log("===============================");
-    }, [chat, messages, input]);
 
     useEffect(() => {
         if (chatContainerRef.current) {
@@ -60,13 +72,9 @@ const Chatbot = () => {
         }
     }, [isOpen]);
 
-    // UI Fallback : If messages is empty (SDK failure), we show a local message
+    // Fallback visuel si messages est vide au démarrage
     const finalMessages = messages.length > 0 ? messages : [
-        {
-            id: 'local-welcome',
-            role: 'assistant',
-            content: "Liaison temporelle établie. Bienvenue chez TimeTravel Agency ! Que puis-je faire pour vous ?"
-        }
+        { id: 'ui-welcome', role: 'assistant', content: "Bienvenue chez TimeTravel Agency ! Je suis votre guide expert. Comment puis-je vous aider ?" }
     ];
 
     return (
@@ -141,18 +149,18 @@ const Chatbot = () => {
 
                     {/* Input */}
                     <form
-                        onSubmit={handleSubmit}
+                        onSubmit={onFormSubmit}
                         className="p-4 bg-slate-900 border-t border-slate-800 flex items-center space-x-2"
                     >
                         <input
                             value={input}
-                            onChange={handleInputChange}
+                            onChange={onTextChange}
                             className="flex-1 bg-slate-800 text-white text-sm px-4 py-3 rounded-xl focus:outline-none focus:ring-1 focus:ring-time-gold transition border border-transparent placeholder:text-slate-500 outline-none"
                             placeholder="Interrogez le temps..."
                         />
                         <button
                             type="submit"
-                            disabled={isLoading || !input || !input.trim()}
+                            disabled={isLoading || !input || (typeof input === 'string' && !input.trim())}
                             className="bg-time-gold text-slate-950 p-3 rounded-xl hover:bg-white transition flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95"
                         >
                             <Send className="h-4 w-4" />
